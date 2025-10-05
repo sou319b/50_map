@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Stalls Map</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        body { padding: 0; margin: 0; }
+        html, body, #map { height: 100%; width: 100vw; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 回転四角形を計算する自作関数 (これは変更なし)
+        function createRotatedRectangle(centerLatLng, widthMeters, heightMeters, angleDegrees) {
+            const centerLat = centerLatLng.lat;
+            const centerLng = centerLatLng.lng;
+            const R = 6378137;
+            const latRad = centerLat * Math.PI / 180;
+            const metersPerDegreeLat = 1 / ( (Math.PI / 180) * R );
+            const metersPerDegreeLng = 1 / ( (Math.PI / 180) * R * Math.cos(latRad) );
+            const halfWidthDegrees = (widthMeters / 2) * metersPerDegreeLng;
+            const halfHeightDegrees = (heightMeters / 2) * metersPerDegreeLat;
+            const angleRad = angleDegrees * Math.PI / 180;
+            const cosAngle = Math.cos(angleRad);
+            const sinAngle = Math.sin(angleRad);
+            const corners = [];
+            const points = [
+                {x: -halfWidthDegrees, y: halfHeightDegrees},
+                {x: halfWidthDegrees, y: halfHeightDegrees},
+                {x: halfWidthDegrees, y: -halfHeightDegrees},
+                {x: -halfWidthDegrees, y: -halfHeightDegrees}
+            ];
+            points.forEach(p => {
+                const rotatedX = p.x * cosAngle - p.y * sinAngle;
+                const rotatedY = p.x * sinAngle + p.y * cosAngle;
+                corners.push(L.latLng(centerLat + rotatedY, centerLng + rotatedX));
+            });
+            return corners;
+        }
+
+        // A. 地図の初期設定
+        const map = L.map('map').setView([35.4822, 139.3358], 18); // 中心とズームを調整
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        //----------------------------------------------------
+        // B. ★ 複数の模擬店の情報を配列で準備 ★
+        //----------------------------------------------------
+        const stallData = [
+            {
+                name: '本部テント',
+                center: [35.4822, 139.3355],
+                width: 15,
+                height: 10,
+                angle: -90,
+                color: 'red'
+            },
+            {
+                name: '焼きそば店',
+                center: [35.4825, 139.3358],
+                width: 8,
+                height: 8,
+                angle: -15,
+                color: 'orange'
+            },
+            {
+                name: '休憩所',
+                center: [35.4819, 139.3360],
+                width: 20,
+                height: 20,
+                angle: 75,
+                color: 'green'
+            }
+        ];
+
+        //----------------------------------------------------
+        // C. ★ 配列をループして、すべてのテントを地図に追加 ★
+        //----------------------------------------------------
+        stallData.forEach(stall => {
+            // 1. データを元に中心のLatLngオブジェクトを作成
+            const center = L.latLng(stall.center[0], stall.center[1]);
+
+            // 2. 自作関数で四角形の頂点を計算
+            const corners = createRotatedRectangle(center, stall.width, stall.height, stall.angle);
+
+            // 3. Polygonを作成して地図に追加
+            const polygon = L.polygon(corners, {
+                color: stall.color, // データから色を指定
+                weight: 2,
+                fillColor: stall.color,
+                fillOpacity: 0.3
+            }).addTo(map);
+
+            // 4. ポップアップに情報を表示
+            polygon.bindPopup(`<h3>${stall.name}</h3>`);
+        });
+
+    </script>
+</body>
+</html>

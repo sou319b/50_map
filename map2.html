@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>幾徳祭 オリジナルMAP</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        html, body { height: 100%; margin: 0; }
+        #map { width: 100%; height: 100%; }
+        .building-label {
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+            text-shadow: 1px 1px 2px white;
+        }
+        /* 模擬店ラベル用のCSS */
+        .stall-label {
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            font-weight: bold;
+            font-size: 12px;
+            color: black;
+            text-shadow: 1px 1px 1px white;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+    // 1. マップの初期化
+    const map = L.map('map').setView([35.486381, 139.341857], 19);
+
+    // 2. 地図タイルを読み込み
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors © CARTO',
+        maxZoom: 20
+    }).addTo(map);
+
+    // 3. 建物ラベルを追加
+    // ... (図書館とKAIT工房のコードはここにあります) ...
+    const libraryLabel = L.divIcon({ className: 'building-label', html: '<b>図書館</b>', iconSize: [100, 20] });
+    L.marker([35.487163, 139.341781], { icon: libraryLabel }).addTo(map)
+      .bindPopup(`<h3>図書館</h3>...`);
+    const kaitKoboLabel = L.divIcon({ className: 'building-label', html: '<b>KAIT工房</b>', iconSize: [100, 20] });
+    L.marker([35.486725, 139.342473], { icon: kaitKoboLabel }).addTo(map)
+      .bindPopup(`<h3>KAIT工房</h3>...`);
+
+
+    // 4. 模擬店を追加 (ここからが本番！)
+    // 【焼きそば店の作成】
+    const yakisobaStallArea = [ [35.4865, 139.3415], [35.4864, 139.3416] ]; // 四角形の対角の2点の座標
+    L.rectangle(yakisobaStallArea, {
+        color: "#ff7800", // 枠線の色
+        weight: 2,         // 枠線の太さ
+    }).addTo(map)
+      .bindTooltip('焼きそば', {
+          permanent: true,             // 常にラベルを表示
+          direction: 'center',         // ラベルを中央に配置
+          className: 'stall-label'     // 作成したCSSクラスを適用
+      })
+      .bindPopup(`
+          <h3>〇〇部 焼きそば</h3>
+          <b>価格:</b> 400円<br>
+          定番のソース味です！
+      `);
+
+    // 【フランクフルト店の作成】
+    const frankfurtStallArea = [ [35.4865, 139.3417], [35.4864, 139.3418] ];
+    L.rectangle(frankfurtStallArea, {
+        color: "#e31a1c",
+        weight: 2,
+    }).addTo(map)
+      .bindTooltip('ﾌﾗﾝｸﾌﾙﾄ', { // 文字がはみ出る場合は短くする
+          permanent: true,
+          direction: 'center',
+          className: 'stall-label'
+      })
+      .bindPopup(`
+          <h3>△△愛好会 フランクフルト</h3>
+          <b>価格:</b> 250円<br>
+          ジューシーで食べ応え抜群！
+      `);
+
+</script>
+
+</body>
+</html>
