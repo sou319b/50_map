@@ -36,7 +36,7 @@
 
 <script>
 
-    // ★ test_map.html から持ってきた回転四角形を計算する関数
+    // ★回転四角形を計算する関数
     function createRotatedRectangle(centerLatLng, widthMeters, heightMeters, angleDegrees) {
         const centerLat = centerLatLng.lat;
         const centerLng = centerLatLng.lng;
@@ -65,17 +65,15 @@
     }
 
     // 1. マップの初期化
-    const map = L.map('map').setView([35.486381, 139.341857], 20);
+    const map = L.map('map').setView([35.486381, 139.341857], 19);
 
     // 2. 地図タイルを読み込み
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap contributors © CARTO',
-        maxZoom: 20,
+        maxZoom: 21,
         minZoom: 18 // ★ ズームアウトしすぎないように最小ズームレベルを設定
     }).addTo(map);
 
-
-    // --- ↓↓↓ ここからが変更箇所です ↓↓↓ ---
 
     // 模擬店の表示を管理するための配列
     const stallPolygons = [];
@@ -84,78 +82,133 @@
     const labelVisibleZoom = 19;
 
 
-    // 3. 建物ラベルを追加 (常に表示されるように直接マップへ追加)
+    // 3. 建物ラベルを追加
     const K1Icon = L.divIcon({ className: 'building-label', html: '<b>K1号館</b>', iconSize: [100, 20] });
-    L.marker([35.486013, 139.341420], { icon: K1Icon })
+    L.marker([35.486043, 139.341480], { icon: K1Icon })
         .addTo(map)
-        .bindPopup(`<h3>K1号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>K1号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>幾徳祭本部</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>６階:&nbsp;</b></div><div>日下部研究室</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>８階:&nbsp;</b></div><div>鷹野研究室, 稲葉研究室, 納富研究室</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１１階:&nbsp;</b></div><div>服部元史研究室</div></div>
+        `);
 
     const K2Icon = L.divIcon({ className: 'building-label', html: '<b>K2号館</b>', iconSize: [100, 20] });
-    L.marker([35.486586, 139.341244], { icon: K2Icon })
+    L.marker([35.486586, 139.341344], { icon: K2Icon })
         .addTo(map)
-        .bindPopup(`<h3>K2号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>K2号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>入試相談コーナー, ホームカミングデー</div></div>
+        `);
 
     const K3Icon = L.divIcon({ className: 'building-label', html: '<b>K3号館</b>', iconSize: [100, 20] });
-    L.marker([35.485621, 139.341415], { icon: K3Icon })
+    L.marker([35.485621, 139.341515], { icon: K3Icon })
         .addTo(map)
-        .bindPopup(`<h3>K3号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>K3号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>地下１階:&nbsp;</b></div><div>作曲研究部</div></div>
+            
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>JAZZ研究部, 軽音楽部</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>２階:&nbsp;</b></div><div>KAIT TCG, ポケモンだいすきクラブ</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>３階:&nbsp;</b></div><div>ECO推進チームみどり, 天文部, オーディオ研究部, KAIT VR</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>４階:&nbsp;</b></div><div>写真部, 漫画研究会, 放送研究部, ~CREATOPIA~メディアデザインサークル, 特撮模型研究部, ゲーム創作同好会</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>５階:&nbsp;</b></div><div>KAIT BLUE, 神奈川工科大学サバゲーサークルKAITS, KAITRPG 吹奏楽部</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>６階:&nbsp;</b></div><div>お笑いサークル 大雷, アニメーション研究部, PSE, 鉄道研究部</div></div> 
+            `);
 
     const K4Icon = L.divIcon({ className: 'building-label', html: '<b>K4号館</b>', iconSize: [100, 20] });
-    L.marker([35.485694, 139.342083], { icon: K4Icon })
+    L.marker([35.485694, 139.342143], { icon: K4Icon })
         .addTo(map)
-        .bindPopup(`<h3>K4号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>K4号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>健康医療科学部 看護学科, 看護学科 国際交流企画</div></div>
+        `);
 
     const D2Icon = L.divIcon({ className: 'building-label', html: '<b>先進技術研究所</b>', iconSize: [100, 20] });
     L.marker([35.486052, 139.341878], { icon: D2Icon })
         .addTo(map)
-        .bindPopup(`<h3>先進技術研究所</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>先進技術研究所</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>２階:&nbsp;</b></div><div>瀬林研究室</div></div>
+        `);
 
     const libraryIcon = L.divIcon({ className: 'building-label', html: '<b>図書館</b>', iconSize: [100, 20] });
-    L.marker([35.487132, 139.341780], { icon: libraryIcon })
+    L.marker([35.487132, 139.341860], { icon: libraryIcon })
         .addTo(map)
-        .bindPopup(`<h3>図書館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>図書館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>LOVOTサークル</div></div>
+            `);
 
     const C2Icon = L.divIcon({ className: 'building-label', html: '<b>C2号館</b>', iconSize: [100, 20] });
     L.marker([35.487629, 139.342086], { icon: C2Icon })
         .addTo(map)
-        .bindPopup(`<h3>C2号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>C2号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>２階:&nbsp;</b></div><div>H科・E科 EIコース, LifeHackers</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>３階:&nbsp;</b></div><div>教育機械工学研究室</div></div>    
+        `);
 
     const C5Icon = L.divIcon({ className: 'building-label', html: '<b>C5号館</b>', iconSize: [100, 20] });
-    L.marker([35.487562, 139.341112], { icon: C5Icon })
+    L.marker([35.487562, 139.341162], { icon: C5Icon })
         .addTo(map)
-        .bindPopup(`<h3>C5号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>C5号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>KAIT AI Racling, 知能モビリティ研究室</div></div>
+        `);
 
     const C6Icon = L.divIcon({ className: 'building-label', html: '<b>C6号館</b>', iconSize: [100, 20] });
-    L.marker([35.487011, 139.341108], { icon: C6Icon })
+    L.marker([35.487011, 139.341158], { icon: C6Icon })
         .addTo(map)
-        .bindPopup(`<h3>C6号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>C6号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>生命科学研究室</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>５階:&nbsp;</b></div><div>利き酒サークル</div></div>
+        `);
 
     const kaitKoboIcon = L.divIcon({ className: 'building-label', html: '<b>KAIT工房</b>', iconSize: [100, 20] });
     L.marker([35.486725, 139.342473], { icon: kaitKoboIcon })
         .addTo(map)
-        .bindPopup(`<h3>KAIT工房</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>KAIT工房</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>KAIT EDTC</div></div>
+        `);
 
     const kaitHirobaIcon = L.divIcon({ className: 'building-label', html: '<b>KAIT広場</b>', iconSize: [100, 20] });
-    L.marker([35.486601, 139.343254], { icon: kaitHirobaIcon })
+    L.marker([35.486601, 139.343304], { icon: kaitHirobaIcon })
         .addTo(map)
-        .bindPopup(`<h3>KAIT広場</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>KAIT広場</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>北本研究室</div></div>
+        `);
 
     const kaitArenaIcon = L.divIcon({ className: 'building-label', html: '<b>KAITアリーナ</b>', iconSize: [100, 20] });
     L.marker([35.485775, 139.343199], { icon: kaitArenaIcon })
         .addTo(map)
-        .bindPopup(`<h3>KAITアリーナ</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>KAITアリーナ</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>土曜日:&nbsp;</b></div><div>KANA-BOON LIVEイベント</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>日曜日:&nbsp;</b></div><div>ビンゴ大会</div></div>
+        `);
 
-    // 4. 模擬店を追加 (ここからが本番！)
-    // ★ 模擬店の情報を配列で一元管理 ★
+    //ネタ 絶対けす
+    const higutiIcon = L.divIcon({ className: 'building-label', html: '<b>樋口</b>', iconSize: [100, 20] });
+    L.marker([35.353576912211636, 138.9752742475777], { icon: higutiIcon })
+        .addTo(map)
+        .bindPopup(`
+        `);
+
+    // 4. 模擬店を追加 
     const stallData = [
         {
-            name: 'ﾔｷﾄﾘﾋﾟｱ',
+            name: 'やきとりピア',
             center: [35.486313, 139.341941], // 中心座標
             width: 8,      // 横幅 (メートル)
             height: 4,    // 縦幅 (メートル)
             angle: 4,      // 回転角度 (度)
             color: "#ff7800",
-            popupContent: `<h3>KAITpia やきとりピア</h3><b>価格:</b> 00円<br>たくさん上手に焼けました！`
+            popupContent: `<h3>KAITpia やきとりピア</h3><br>たくさん上手に焼けました！`
         },
         {
             name: '焼売',
@@ -164,7 +217,7 @@
             height: 4,
             angle: 4,
             color: "#ff7800",
-            popupContent: `<h3>バレーボールサークル フランクフルト</h3><b>価格:</b> 00円<br>肉の旨味たっぷり焼売！！`
+            popupContent: `<h3>バレーボールサークル 焼売</h3><br>肉の旨味たっぷり焼売！！`
         },
         {
             name: 'ﾌﾗﾝｸﾌﾙﾄ',
@@ -173,7 +226,7 @@
             height: 4,
             angle: 4,
             color: "#ff7800",
-            popupContent: `<h3>岡本剛研究室 フランクフルト</h3><b>価格:</b> 00円<br>アツアツ！ジューシーなフランクフルト`
+            popupContent: `<h3>岡本剛研究室 フランクフルト</h3><br>アツアツ！ジューシーなフランクフルト`
         },
         {
             name: '焼きそば',
@@ -182,7 +235,7 @@
             height: 4,
             angle: 4,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><br>今年は焼きそばやります！ぜひ来てください`
         },
         {
             name: 'ﾎｯﾄﾄﾞｯｸ',
@@ -191,7 +244,7 @@
             height: 4,
             angle: 4,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>上田研究室 ホットドッグ</h3><br>歴史あるホットドックを販売！絶対食べに来てね！`
         },
         {
             name: 'ﾌﾗｲﾄﾞﾎﾟﾃﾄ',
@@ -200,7 +253,7 @@
             height: 4,
             angle: 4,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>陳研究室 フライドポテト「陳」</h3><br>外はカリッ！中はホクホク食感！食べた人が笑顔になる`
         },
         {
             name: 'ﾜｯﾌﾙ',
@@ -209,7 +262,7 @@
             height: 4,
             angle: 4,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>KAIT VR わふわふワッフル</h3><br>トッピング７種類からオリジナルワッフルを作ろ`
         },
         // ーーーここから学生課前ーーー
         {
@@ -219,7 +272,7 @@
             height: 4,
             angle: 95,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>塩川研究室 餃子BOSS</h3><br>肉汁たっぷり熱々の餃子をぜひ食べに来てください！`
         },
          {
             name: 'ﾊｯｼｭﾄﾞﾎﾟﾃﾄ',
@@ -228,7 +281,7 @@
             height: 4,
             angle: 95,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>岡本学研究室 ハッシュドポテト</h3><br>コスプレしてハッシュドポテト販売します！`
         },
         // ーーーここから 図書館横ーーー
         {
@@ -238,7 +291,7 @@
             height: 4,
             angle: 95,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>スキー部 俺のから揚げ</h3><br>スキー部みんなで作る。揚げたてのから揚げです！`
         },
         {
             name: 'たこ焼き',
@@ -247,7 +300,7 @@
             height: 4,
             angle: 95,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>KAIT NLSC たこ焼きサークル揚げたこ焼き</h3><br>揚げたこ焼きをつくります！`
         },
         {
             name: '射的',
@@ -256,7 +309,7 @@
             height: 4,
             angle: 95,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>鹿島建設株式会社 射的</h3><br>豪華景品多数でお待ちしております。`
         },
         {
             name: 'ｺｰﾋｰ',
@@ -265,7 +318,7 @@
             height: 4,
             angle: 95,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>自転車部 cycle cafe</h3><br>丹精を込めて高級コーヒーであるゲイシャを入れます！`
         },
         {
             name: 'わたあめ',
@@ -274,7 +327,7 @@
             height: 4,
             angle: 95,
             color: "#ff7800",
-            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+            popupContent: `<h3>信号処理応用研究室 わたあめ</h3><br>食べ歩きに甘いわたがしはいかが？２サイズあるよ！`
         },
     ];
 
@@ -347,3 +400,8 @@ map.on('click', function(e) {
 
 </body>
 </html>
+<!-- 
+魂の叫び
+あと、１７日
+はやくおわってくれ～～
+-->
