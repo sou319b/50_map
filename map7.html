@@ -70,7 +70,7 @@
     // 2. 地図タイルを読み込み
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap contributors © CARTO',
-        maxZoom: 20,
+        maxZoom: 21,
         minZoom: 18 // ★ ズームアウトしすぎないように最小ズームレベルを設定
     }).addTo(map);
 
@@ -82,66 +82,115 @@
     const labelVisibleZoom = 19;
 
 
-    // 3. 建物ラベルを追加 (常に表示されるように直接マップへ追加)
+    // 3. 建物ラベルを追加
     const K1Icon = L.divIcon({ className: 'building-label', html: '<b>K1号館</b>', iconSize: [100, 20] });
     L.marker([35.486043, 139.341480], { icon: K1Icon })
         .addTo(map)
-        .bindPopup(`<h3>K1号館</h3><p><b>6階:</b>602 日下部研究室<br><b>8階:</b>806 鷹野研究室, 807 稲葉研究室, 811 納富研究室<br><b>11階:</b>1115 服部研究室</p>`);
+        .bindPopup(`
+            <h3>K1号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>幾徳祭本部</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>６階:&nbsp;</b></div><div>日下部研究室</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>８階:&nbsp;</b></div><div>鷹野研究室, 稲葉研究室, 納富研究室</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１１階:&nbsp;</b></div><div>服部元史研究室</div></div>
+        `);
 
     const K2Icon = L.divIcon({ className: 'building-label', html: '<b>K2号館</b>', iconSize: [100, 20] });
     L.marker([35.486586, 139.341344], { icon: K2Icon })
         .addTo(map)
-        .bindPopup(`<h3>K2号館</h3><p><b>１階:</b> 入試相談コーナー</p>`);
+        .bindPopup(`
+            <h3>K2号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>入試相談コーナー, ホームカミングデー</div></div>
+        `);
 
     const K3Icon = L.divIcon({ className: 'building-label', html: '<b>K3号館</b>', iconSize: [100, 20] });
     L.marker([35.485621, 139.341515], { icon: K3Icon })
         .addTo(map)
-        .bindPopup(`<h3>K3号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>K3号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>地下１階:&nbsp;</b></div><div>作曲研究部</div></div>
+            
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>JAZZ研究部, 軽音楽部</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>２階:&nbsp;</b></div><div>KAIT TCG, ポケモンだいすきクラブ</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>３階:&nbsp;</b></div><div>ECO推進チームみどり, 天文部, オーディオ研究部, KAIT VR</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>４階:&nbsp;</b></div><div>写真部, 漫画研究会, 放送研究部, ~CREATOPIA~メディアデザインサークル, 特撮模型研究部, ゲーム創作同好会</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>５階:&nbsp;</b></div><div>KAIT BLUE, 神奈川工科大学サバゲーサークルKAITS, KAITRPG 吹奏楽部</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>６階:&nbsp;</b></div><div>お笑いサークル 大雷, アニメーション研究部, PSE, 鉄道研究部</div></div> 
+            `);
 
     const K4Icon = L.divIcon({ className: 'building-label', html: '<b>K4号館</b>', iconSize: [100, 20] });
     L.marker([35.485694, 139.342143], { icon: K4Icon })
         .addTo(map)
-        .bindPopup(`<h3>K4号館</h3><p><b>１階:</b>101･102 健康医療科学部 看護学科, 101･102 看護学科 国際交流企画</p>`);
+        .bindPopup(`
+            <h3>K4号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>健康医療科学部 看護学科, 看護学科 国際交流企画</div></div>
+        `);
 
     const D2Icon = L.divIcon({ className: 'building-label', html: '<b>先進技術研究所</b>', iconSize: [100, 20] });
     L.marker([35.486052, 139.341878], { icon: D2Icon })
         .addTo(map)
-        .bindPopup(`<h3>先進技術研究所</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>先進技術研究所</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>２階:&nbsp;</b></div><div>瀬林研究室</div></div>
+        `);
 
     const libraryIcon = L.divIcon({ className: 'building-label', html: '<b>図書館</b>', iconSize: [100, 20] });
     L.marker([35.487132, 139.341860], { icon: libraryIcon })
         .addTo(map)
-        .bindPopup(`<h3>図書館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>図書館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>LOVOTサークル</div></div>
+            `);
 
     const C2Icon = L.divIcon({ className: 'building-label', html: '<b>C2号館</b>', iconSize: [100, 20] });
     L.marker([35.487629, 139.342086], { icon: C2Icon })
         .addTo(map)
-        .bindPopup(`<h3>C2号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>C2号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>２階:&nbsp;</b></div><div>H科・E科 EIコース, LifeHackers</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>３階:&nbsp;</b></div><div>教育機械工学研究室</div></div>    
+        `);
 
     const C5Icon = L.divIcon({ className: 'building-label', html: '<b>C5号館</b>', iconSize: [100, 20] });
     L.marker([35.487562, 139.341162], { icon: C5Icon })
         .addTo(map)
-        .bindPopup(`<h3>C5号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>C5号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>KAIT AI Racling, 知能モビリティ研究室</div></div>
+        `);
 
     const C6Icon = L.divIcon({ className: 'building-label', html: '<b>C6号館</b>', iconSize: [100, 20] });
     L.marker([35.487011, 139.341158], { icon: C6Icon })
         .addTo(map)
-        .bindPopup(`<h3>C6号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>C6号館</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>生命科学研究室</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>５階:&nbsp;</b></div><div>利き酒サークル</div></div>
+        `);
 
     const kaitKoboIcon = L.divIcon({ className: 'building-label', html: '<b>KAIT工房</b>', iconSize: [100, 20] });
     L.marker([35.486725, 139.342473], { icon: kaitKoboIcon })
         .addTo(map)
-        .bindPopup(`<h3>KAIT工房</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>KAIT工房</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>KAIT EDTC</div></div>
+        `);
 
     const kaitHirobaIcon = L.divIcon({ className: 'building-label', html: '<b>KAIT広場</b>', iconSize: [100, 20] });
     L.marker([35.486601, 139.343304], { icon: kaitHirobaIcon })
         .addTo(map)
-        .bindPopup(`<h3>KAIT広場</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>KAIT広場</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>１階:&nbsp;</b></div><div>北本研究室</div></div>
+        `);
 
     const kaitArenaIcon = L.divIcon({ className: 'building-label', html: '<b>KAITアリーナ</b>', iconSize: [100, 20] });
     L.marker([35.485775, 139.343199], { icon: kaitArenaIcon })
         .addTo(map)
-        .bindPopup(`<h3>KAITアリーナ</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+        .bindPopup(`
+            <h3>KAITアリーナ</h3>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>土曜日:&nbsp;</b></div><div>KANA-BOON LIVEイベント</div></div>
+            <div style="display: flex;"><div style="flex-shrink: 0; white-space: nowrap;"><b>日曜日:&nbsp;</b></div><div>ビンゴ大会</div></div>
+        `);
 
     // 4. 模擬店を追加 
     const stallData = [
