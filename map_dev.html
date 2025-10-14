@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>幾徳祭 オリジナルMAP</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        html, body { height: 100%; margin: 0; }
+        #map { width: 100%; height: 100%; }
+        .building-label {
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+            text-shadow: 1px 1px 2px white;
+        }
+        /* 模擬店ラベル用のCSS */
+        .stall-label {
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            font-weight: bold;
+            font-size: 12px;
+            color: black;
+            text-shadow: 1px 1px 1px white;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+
+    // ★ test_map.html から持ってきた回転四角形を計算する関数
+    function createRotatedRectangle(centerLatLng, widthMeters, heightMeters, angleDegrees) {
+        const centerLat = centerLatLng.lat;
+        const centerLng = centerLatLng.lng;
+        const R = 6378137; // 地球の半径 (メートル)
+        const latRad = centerLat * Math.PI / 180;
+        const metersPerDegreeLat = 1 / ((Math.PI / 180) * R);
+        const metersPerDegreeLng = 1 / ((Math.PI / 180) * R * Math.cos(latRad));
+        const halfWidthDegrees = (widthMeters / 2) * metersPerDegreeLng;
+        const halfHeightDegrees = (heightMeters / 2) * metersPerDegreeLat;
+        const angleRad = angleDegrees * Math.PI / 180;
+        const cosAngle = Math.cos(angleRad);
+        const sinAngle = Math.sin(angleRad);
+        const corners = [];
+        const points = [
+            {x: -halfWidthDegrees, y: halfHeightDegrees},
+            {x: halfWidthDegrees, y: halfHeightDegrees},
+            {x: halfWidthDegrees, y: -halfHeightDegrees},
+            {x: -halfWidthDegrees, y: -halfHeightDegrees}
+        ];
+        points.forEach(p => {
+            const rotatedX = p.x * cosAngle - p.y * sinAngle;
+            const rotatedY = p.x * sinAngle + p.y * cosAngle;
+            corners.push(L.latLng(centerLat + rotatedY, centerLng + rotatedX));
+        });
+        return corners;
+    }
+
+    // 1. マップの初期化
+    const map = L.map('map').setView([35.486381, 139.341857], 20);
+
+    // 2. 地図タイルを読み込み
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors © CARTO',
+        maxZoom: 20,
+        minZoom: 18 // ★ ズームアウトしすぎないように最小ズームレベルを設定
+    }).addTo(map);
+
+
+    // --- ↓↓↓ ここからが変更箇所です ↓↓↓ ---
+
+    // 模擬店の表示を管理するための配列
+    const stallPolygons = [];
+
+    // ラベルを表示し始めるズームレベル
+    const labelVisibleZoom = 19;
+
+
+    // 3. 建物ラベルを追加 (常に表示されるように直接マップへ追加)
+    const K1Icon = L.divIcon({ className: 'building-label', html: '<b>K1号館</b>', iconSize: [100, 20] });
+    L.marker([35.486013, 139.341420], { icon: K1Icon })
+        .addTo(map)
+        .bindPopup(`<h3>K1号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const K2Icon = L.divIcon({ className: 'building-label', html: '<b>K2号館</b>', iconSize: [100, 20] });
+    L.marker([35.486586, 139.341244], { icon: K2Icon })
+        .addTo(map)
+        .bindPopup(`<h3>K2号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const K3Icon = L.divIcon({ className: 'building-label', html: '<b>K3号館</b>', iconSize: [100, 20] });
+    L.marker([35.485621, 139.341415], { icon: K3Icon })
+        .addTo(map)
+        .bindPopup(`<h3>K3号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const K4Icon = L.divIcon({ className: 'building-label', html: '<b>K4号館</b>', iconSize: [100, 20] });
+    L.marker([35.485694, 139.342083], { icon: K4Icon })
+        .addTo(map)
+        .bindPopup(`<h3>K4号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const D2Icon = L.divIcon({ className: 'building-label', html: '<b>先進技術研究所</b>', iconSize: [100, 20] });
+    L.marker([35.486052, 139.341878], { icon: D2Icon })
+        .addTo(map)
+        .bindPopup(`<h3>先進技術研究所</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const libraryIcon = L.divIcon({ className: 'building-label', html: '<b>図書館</b>', iconSize: [100, 20] });
+    L.marker([35.487132, 139.341780], { icon: libraryIcon })
+        .addTo(map)
+        .bindPopup(`<h3>図書館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const C2Icon = L.divIcon({ className: 'building-label', html: '<b>C2号館</b>', iconSize: [100, 20] });
+    L.marker([35.487629, 139.342086], { icon: C2Icon })
+        .addTo(map)
+        .bindPopup(`<h3>C2号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const C5Icon = L.divIcon({ className: 'building-label', html: '<b>C5号館</b>', iconSize: [100, 20] });
+    L.marker([35.487562, 139.341112], { icon: C5Icon })
+        .addTo(map)
+        .bindPopup(`<h3>C5号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const C6Icon = L.divIcon({ className: 'building-label', html: '<b>C6号館</b>', iconSize: [100, 20] });
+    L.marker([35.487011, 139.341108], { icon: C6Icon })
+        .addTo(map)
+        .bindPopup(`<h3>C6号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const kaitKoboIcon = L.divIcon({ className: 'building-label', html: '<b>KAIT工房</b>', iconSize: [100, 20] });
+    L.marker([35.486725, 139.342473], { icon: kaitKoboIcon })
+        .addTo(map)
+        .bindPopup(`<h3>KAIT工房</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const kaitHirobaIcon = L.divIcon({ className: 'building-label', html: '<b>KAIT広場</b>', iconSize: [100, 20] });
+    L.marker([35.486601, 139.343254], { icon: kaitHirobaIcon })
+        .addTo(map)
+        .bindPopup(`<h3>KAIT広場</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    const kaitArenaIcon = L.divIcon({ className: 'building-label', html: '<b>KAITアリーナ</b>', iconSize: [100, 20] });
+    L.marker([35.485775, 139.343199], { icon: kaitArenaIcon })
+        .addTo(map)
+        .bindPopup(`<h3>KAITアリーナ</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
+
+    // 4. 模擬店を追加 (ここからが本番！)
+    // ★ 模擬店の情報を配列で一元管理 ★
+    const stallData = [
+        {
+            name: 'ﾔｷﾄﾘﾋﾟｱ',
+            center: [35.486313, 139.341941], // 中心座標
+            width: 8,      // 横幅 (メートル)
+            height: 4,    // 縦幅 (メートル)
+            angle: 4,      // 回転角度 (度)
+            color: "#ff7800",
+            popupContent: `<h3>KAITpia やきとりピア</h3><b>価格:</b> 00円<br>たくさん上手に焼けました！`
+        },
+        {
+            name: '焼売',
+            center: [35.486402, 139.341932],
+            width: 8,
+            height: 4,
+            angle: 4,
+            color: "#ff7800",
+            popupContent: `<h3>バレーボールサークル フランクフルト</h3><b>価格:</b> 00円<br>肉の旨味たっぷり焼売！！`
+        },
+        {
+            name: 'ﾌﾗﾝｸﾌﾙﾄ',
+            center: [35.486407, 139.342020],
+            width: 8,
+            height: 4,
+            angle: 4,
+            color: "#ff7800",
+            popupContent: `<h3>岡本剛研究室 フランクフルト</h3><b>価格:</b> 00円<br>アツアツ！ジューシーなフランクフルト`
+        },
+        {
+            name: '焼きそば',
+            center: [35.486383, 139.341590],
+            width: 8,
+            height: 4,
+            angle: 4,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+        {
+            name: 'ﾎｯﾄﾄﾞｯｸ',
+            center: [35.486299, 139.341591],
+            width: 8,
+            height: 4,
+            angle: 4,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+        {
+            name: 'ﾌﾗｲﾄﾞﾎﾟﾃﾄ',
+            center: [35.486304, 139.341683],
+            width: 8,
+            height: 4,
+            angle: 4,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+        {
+            name: 'ﾜｯﾌﾙ',
+            center: [35.486308, 139.341773],
+            width: 8,
+            height: 4,
+            angle: 4,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+        // ーーーここから学生課前ーーー
+        {
+            name: '餃子',
+            center: [35.486524, 139.341557],
+            width: 8,
+            height: 4,
+            angle: 95,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+         {
+            name: 'ﾊｯｼｭﾄﾞﾎﾟﾃﾄ',
+            center: [35.486614, 139.341545],
+            width: 8,
+            height: 4,
+            angle: 95,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+        // ーーーここから 図書館横ーーー
+        {
+            name: 'から揚げ',
+            center: [35.487011, 139.341474],
+            width: 8,
+            height: 4,
+            angle: 95,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+        {
+            name: 'たこ焼き',
+            center: [35.487102, 139.341464],
+            width: 8,
+            height: 4,
+            angle: 95,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+        {
+            name: '射的',
+            center: [35.486940, 139.341331],
+            width: 8,
+            height: 4,
+            angle: 95,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+        {
+            name: 'ｺｰﾋｰ',
+            center: [35.487026, 139.341323],
+            width: 8,
+            height: 4,
+            angle: 95,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+        {
+            name: 'わたあめ',
+            center: [35.487117, 139.341313],
+            width: 8,
+            height: 4,
+            angle: 95,
+            color: "#ff7800",
+            popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><b>価格:</b> 00円<br>今年は焼きそばやります！ぜひ来てください`
+        },
+    ];
+
+    // ★ 配列をループして、すべての模擬店を地図に追加 ★
+    stallData.forEach(stall => {
+        const center = L.latLng(stall.center[0], stall.center[1]);
+        const corners = createRotatedRectangle(center, stall.width, stall.height, stall.angle);
+        
+        const polygon = L.polygon(corners, {
+            color: stall.color,
+            weight: 2,
+        })
+        .addTo(map)
+        .bindTooltip(stall.name, {
+            permanent: true,
+            direction: 'center',
+            className: 'stall-label'
+        })
+        .bindPopup(stall.popupContent);
+
+        stallPolygons.push(polygon); // ★ 作成したポリゴンを配列に保存
+    });
+
+    // ★★★ ズームレベルに応じて【模擬店の】ラベルの表示/非表示を切り替える関数 ★★★
+    function updateLabelVisibility() {
+        const currentZoom = map.getZoom();
+
+        // 模擬店のラベル（ツールチップ）を処理
+        stallPolygons.forEach(polygon => {
+            if (currentZoom >= labelVisibleZoom) {
+                // ズームレベルが閾値以上なら、ツールチップを開く
+                polygon.openTooltip();
+            } else {
+                // ズームレベルが閾値未満なら、ツールチップを閉じる
+                polygon.closeTooltip();
+            }
+        });
+    }
+
+    // ★ マップのズームが終了したときに、上記の関数を実行するように設定
+    map.on('zoomend', updateLabelVisibility);
+
+    // ★ 初回読み込み時にも一度実行して、現在のズームレベルに合わせる
+    updateLabelVisibility();
+
+
+// ★★★ 位置合わせを簡単にするためのヘルパー機能 ★★★
+let firstClickPoint = null;
+map.on('click', function(e) {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+    console.log(`【中心座標】 center: [${lat.toFixed(6)}, ${lng.toFixed(6)}],`);
+    if (firstClickPoint === null) {
+        firstClickPoint = e.latlng;
+        console.log('▲ 1点目をクリックしました。次はテントの向きがわかるように、辺に沿ってもう1点クリックしてください。');
+    } else {
+        const lat1 = firstClickPoint.lat;
+        const lng1 = firstClickPoint.lng;
+        const lat2 = e.latlng.lat;
+        const lng2 = e.latlng.lng;
+        const y = lat2 - lat1;
+        const x = (lng2 - lng1) * Math.cos(lat1 * Math.PI / 180); 
+        let angle = Math.atan2(y, x) * (180 / Math.PI);
+        console.log(`【角度】 angle: ${angle.toFixed(2)},`);
+        console.log('--------------------------------------');
+        firstClickPoint = null;
+    }
+});
+</script>
+
+</body>
+</html>
