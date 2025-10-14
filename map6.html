@@ -75,74 +75,75 @@
     }).addTo(map);
 
 
-    // ラベル（マーカーやツールチップ）の表示を管理するための配列
-    const buildingMarkers = [];
+    // --- ↓↓↓ ここからが変更箇所です ↓↓↓ ---
+
+    // 模擬店の表示を管理するための配列
     const stallPolygons = [];
 
     // ラベルを表示し始めるズームレベル
     const labelVisibleZoom = 19;
 
 
-    // 3. 建物ラベルを追加 (マーカーを配列に格納するように変更)
+    // 3. 建物ラベルを追加 (常に表示されるように直接マップへ追加)
     const K1Icon = L.divIcon({ className: 'building-label', html: '<b>K1号館</b>', iconSize: [100, 20] });
-    const K1Marker = L.marker([35.486043, 139.341343], { icon: K1Icon })
+    L.marker([35.486043, 139.341343], { icon: K1Icon })
+        .addTo(map)
         .bindPopup(`<h3>K1号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(K1Marker); // 配列に追加
 
     const K2Icon = L.divIcon({ className: 'building-label', html: '<b>K2号館</b>', iconSize: [100, 20] });
-    const K2Marker = L.marker([35.486586, 139.341244], { icon: K2Icon })
+    L.marker([35.486586, 139.341244], { icon: K2Icon })
+        .addTo(map)
         .bindPopup(`<h3>K2号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(K2Marker); // 配列に追加
 
     const K3Icon = L.divIcon({ className: 'building-label', html: '<b>K3号館</b>', iconSize: [100, 20] });
-    const K3Marker = L.marker([35.485621, 139.341415], { icon: K3Icon })
+    L.marker([35.485621, 139.341415], { icon: K3Icon })
+        .addTo(map)
         .bindPopup(`<h3>K3号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(K3Marker); // 配列に追加
 
     const K4Icon = L.divIcon({ className: 'building-label', html: '<b>K4号館</b>', iconSize: [100, 20] });
-    const K4Marker = L.marker([35.485673, 139.342000], { icon: K4Icon })
+    L.marker([35.485673, 139.342000], { icon: K4Icon })
+        .addTo(map)
         .bindPopup(`<h3>K4号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(K4Marker); // 配列に追加
 
     const D2Icon = L.divIcon({ className: 'building-label', html: '<b>先進技術研究所</b>', iconSize: [100, 20] });
-    const D2Marker = L.marker([35.486052, 139.341878], { icon: D2Icon })
-        .bindPopup(`<h3>K4号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(D2Marker); // 配列に追加
+    L.marker([35.486052, 139.341878], { icon: D2Icon })
+        .addTo(map)
+        .bindPopup(`<h3>先進技術研究所</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
 
     const libraryIcon = L.divIcon({ className: 'building-label', html: '<b>図書館</b>', iconSize: [100, 20] });
-    const libraryMarker = L.marker([35.487163, 139.341781], { icon: libraryIcon })
+    L.marker([35.487163, 139.341781], { icon: libraryIcon })
+        .addTo(map)
         .bindPopup(`<h3>図書館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(libraryMarker); // 配列に追加
 
     const C2Icon = L.divIcon({ className: 'building-label', html: '<b>C2号館</b>', iconSize: [100, 20] });
-    const C2Marker = L.marker([35.487629, 139.342086], { icon: C2Icon })
+    L.marker([35.487629, 139.342086], { icon: C2Icon })
+        .addTo(map)
         .bindPopup(`<h3>C2号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(C2Marker); // 配列に追加
 
     const C5Icon = L.divIcon({ className: 'building-label', html: '<b>C5号館</b>', iconSize: [100, 20] });
-    const C5Marker = L.marker([35.487562, 139.341112], { icon: C5Icon })
+    L.marker([35.487562, 139.341112], { icon: C5Icon })
+        .addTo(map)
         .bindPopup(`<h3>C5号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(C5Marker); // 配列に追加
 
     const C6Icon = L.divIcon({ className: 'building-label', html: '<b>C6号館</b>', iconSize: [100, 20] });
-    const C6Marker = L.marker([35.487040, 139.341067], { icon: C6Icon })
+    L.marker([35.487040, 139.341067], { icon: C6Icon })
+        .addTo(map)
         .bindPopup(`<h3>C6号館</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(C6Marker); // 配列に追加
 
     const kaitKoboIcon = L.divIcon({ className: 'building-label', html: '<b>KAIT工房</b>', iconSize: [100, 20] });
-    const kaitKoboMarker = L.marker([35.486725, 139.342473], { icon: kaitKoboIcon })
+    L.marker([35.486725, 139.342473], { icon: kaitKoboIcon })
+        .addTo(map)
         .bindPopup(`<h3>KAIT工房</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(kaitKoboMarker); // 配列に追加
 
     const kaitHirobaIcon = L.divIcon({ className: 'building-label', html: '<b>KAIT広場</b>', iconSize: [100, 20] });
-    const kaitHirobaMarker = L.marker([35.486601, 139.343254], { icon: kaitHirobaIcon })
+    L.marker([35.486601, 139.343254], { icon: kaitHirobaIcon })
+        .addTo(map)
         .bindPopup(`<h3>KAIT広場</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(kaitHirobaMarker); // 配列に追加
 
     const kaitArenaIcon = L.divIcon({ className: 'building-label', html: '<b>KAITアリーナ</b>', iconSize: [100, 20] });
-    const kaitArenaMarker = L.marker([35.485775, 139.343199], { icon: kaitArenaIcon })
+    L.marker([35.485775, 139.343199], { icon: kaitArenaIcon })
+        .addTo(map)
         .bindPopup(`<h3>KAITアリーナ</h3><p><b>１階:</b> 〇〇団体, ××サークル<br><b>２階:</b> △△研究室, □□委員会</p>`);
-    buildingMarkers.push(kaitArenaMarker); // 配列に追加
 
     // 4. 模擬店を追加 (ここからが本番！)
     // ★ 模擬店の情報を配列で一元管理 ★
@@ -297,24 +298,9 @@
         stallPolygons.push(polygon); // ★ 作成したポリゴンを配列に保存
     });
 
-    // ★★★ ズームレベルに応じてラベルの表示/非表示を切り替える関数 ★★★
+    // ★★★ ズームレベルに応じて【模擬店の】ラベルの表示/非表示を切り替える関数 ★★★
     function updateLabelVisibility() {
         const currentZoom = map.getZoom();
-
-        // 建物のラベル（マーカー）を処理
-        buildingMarkers.forEach(marker => {
-            if (currentZoom >= labelVisibleZoom) {
-                // ズームレベルが閾値以上なら、マーカーを地図に追加
-                if (!map.hasLayer(marker)) { // まだ地図になければ追加
-                    marker.addTo(map);
-                }
-            } else {
-                // ズームレベルが閾値未満なら、マーカーを地図から削除
-                if (map.hasLayer(marker)) { // 地図にあれば削除
-                    marker.removeFrom(map);
-                }
-            }
-        });
 
         // 模擬店のラベル（ツールチップ）を処理
         stallPolygons.forEach(polygon => {
