@@ -3,106 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiple Stalls Map</title>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <title>第50回 幾徳祭 公式サイト</title>
     <style>
-        body { padding: 0; margin: 0; }
-        html, body, #map { height: 100%; width: 100vw; }
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #4a7a8c;
+            color: white;
+            padding: 20px 40px;
+            text-align: center;
+            border-bottom: 5px solid #3a5f6e;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        header p {
+            margin: 5px 0 0;
+            font-size: 1.2em;
+        }
+        main {
+            padding: 20px;
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #4a7a8c;
+            border-bottom: 2px solid #4a7a8c;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        p {
+            line-height: 1.6;
+        }
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 75%; /* アスペクト比 4:3 */
+            margin-top: 20px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .map-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            background-color: #333;
+            color: white;
+        }
+        footer p {
+            margin: 0;
+        }
     </style>
 </head>
 <body>
-    <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // 回転四角形を計算する自作関数 (これは変更なし)
-        function createRotatedRectangle(centerLatLng, widthMeters, heightMeters, angleDegrees) {
-            const centerLat = centerLatLng.lat;
-            const centerLng = centerLatLng.lng;
-            const R = 6378137;
-            const latRad = centerLat * Math.PI / 180;
-            const metersPerDegreeLat = 1 / ( (Math.PI / 180) * R );
-            const metersPerDegreeLng = 1 / ( (Math.PI / 180) * R * Math.cos(latRad) );
-            const halfWidthDegrees = (widthMeters / 2) * metersPerDegreeLng;
-            const halfHeightDegrees = (heightMeters / 2) * metersPerDegreeLat;
-            const angleRad = angleDegrees * Math.PI / 180;
-            const cosAngle = Math.cos(angleRad);
-            const sinAngle = Math.sin(angleRad);
-            const corners = [];
-            const points = [
-                {x: -halfWidthDegrees, y: halfHeightDegrees},
-                {x: halfWidthDegrees, y: halfHeightDegrees},
-                {x: halfWidthDegrees, y: -halfHeightDegrees},
-                {x: -halfWidthDegrees, y: -halfHeightDegrees}
-            ];
-            points.forEach(p => {
-                const rotatedX = p.x * cosAngle - p.y * sinAngle;
-                const rotatedY = p.x * sinAngle + p.y * cosAngle;
-                corners.push(L.latLng(centerLat + rotatedY, centerLng + rotatedX));
-            });
-            return corners;
-        }
+    <header>
+        <h1>第50回 幾徳祭</h1>
+        <p>神奈川工科大学 学園祭へようこそ！</p>
+    </header>
 
-        // A. 地図の初期設定
-        const map = L.map('map').setView([35.4822, 139.3358], 18); // 中心とズームを調整
+    <main>
+        <h2>ごあいさつ</h2>
+        <p>
+            こんにちは！私たち「学友会イベント局」です。<br>
+            今年も、神奈川工科大学の学園祭「幾徳祭」の季節がやってまいりました！<br>
+            この日のために、たくさんの学生や団体が準備を重ねてきました。楽しい企画や美味しい模擬店が盛りだくさんです。ぜひ、このインタラクティブマップをご活用いただき、隅々までお楽しみください！
+        </p>
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        <h2>会場マップ</h2>
+        <p>
+            下のマップでは、各企画の場所や模擬店の位置を確認できます。<br>
+            気になる場所をクリック（タップ）すると、詳細情報が表示されます。
+        </p>
+        
+        <div class="map-container">
+            <iframe src="https://sou319b.github.io/50_map/map_dev.html">
+                <p>お使いのブラウザはiframeに対応していません。</p>
+            </iframe>
+        </div>
 
-        //----------------------------------------------------
-        // B. ★ 複数の模擬店の情報を配列で準備 ★
-        //----------------------------------------------------
-        const stallData = [
-            {
-                name: '本部テント',
-                center: [35.4822, 139.3355],
-                width: 15,
-                height: 10,
-                angle: -90,
-                color: 'red'
-            },
-            {
-                name: '焼きそば店',
-                center: [35.4825, 139.3358],
-                width: 8,
-                height: 8,
-                angle: -15,
-                color: 'orange'
-            },
-            {
-                name: '休憩所',
-                center: [35.4819, 139.3360],
-                width: 20,
-                height: 20,
-                angle: 75,
-                color: 'green'
-            }
-        ];
+        <h2>開催概要</h2>
+        <p>
+            <strong>日程:</strong> 202X年 11月XX日(土) 〜 XX日(日)<br>
+            <strong>時間:</strong> 10:00 〜 17:00<br>
+            <strong>場所:</strong> 神奈川工科大学 キャンパス内
+        </p>
+    </main>
 
-        //----------------------------------------------------
-        // C. ★ 配列をループして、すべてのテントを地図に追加 ★
-        //----------------------------------------------------
-        stallData.forEach(stall => {
-            // 1. データを元に中心のLatLngオブジェクトを作成
-            const center = L.latLng(stall.center[0], stall.center[1]);
+    <footer>
+        <p>&copy; 202X 神奈川工科大学 学友会イベント局</p>
+    </footer>
 
-            // 2. 自作関数で四角形の頂点を計算
-            const corners = createRotatedRectangle(center, stall.width, stall.height, stall.angle);
-
-            // 3. Polygonを作成して地図に追加
-            const polygon = L.polygon(corners, {
-                color: stall.color, // データから色を指定
-                weight: 2,
-                fillColor: stall.color,
-                fillOpacity: 0.3
-            }).addTo(map);
-
-            // 4. ポップアップに情報を表示
-            polygon.bindPopup(`<h3>${stall.name}</h3>`);
-        });
-
-    </script>
 </body>
 </html>
