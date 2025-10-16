@@ -28,12 +28,54 @@
             color: black;
             text-shadow: 1px 1px 1px white;
         }
+        /* マップオーバーレイ用のCSS */
+        #map-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 半透明の黒い背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* マップより手前に表示 */
+            pointer-events: none; /* オーバーレイの下のマップを操作できるようにする */
+            transition: opacity 0.5s ease-in-out; /* フェードアウト用のアニメーション */
+        }
+        #zoom-message {
+            color: white;
+            font-size: 1.2em; /* 文字を少し大きく */
+            text-shadow: 1px 1px 2px black; /* 文字の影 */
+            padding: 20px;
+            text-align: center;
+        }
+        /* キーボードのキーのデザイン */
+        kbd {
+            background-color: #eee;
+            border-radius: 3px;
+            border: 1px solid #b4b4b4;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
+            color: #333;
+            display: inline-block;
+            font-family: monospace;
+            font-size: 0.85em;
+            font-weight: 700;
+            line-height: 1;
+            padding: 2px 4px;
+            text-shadow: 0 1px 0 #fff;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
 
 <div id="map"></div>
 
+<div id="map-overlay">
+    <div id="zoom-message">
+      </div>
+</div>  
 <script>
 
     // ★回転四角形を計算する関数
@@ -65,14 +107,61 @@
     }
 
     // 1. マップの初期化
-    const map = L.map('map').setView([35.486381, 139.341857], 19);
+    //const map = L.map('map').setView([35.486381, 139.341857], 19);
+    const map = L.map('map', {
+        scrollWheelZoom: false // スクロールホイールでのズームを無効化
+    }).setView([35.486381, 139.341857], 19);
 
-    // 2. 地図タイルを読み込み
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap contributors © CARTO',
-        maxZoom: 21,
-        minZoom: 18 // ★ ズームアウトしすぎないように最小ズームレベルを設定
-    }).addTo(map);
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Control') {
+            map.scrollWheelZoom.enable();
+        }
+    });
+
+    document.addEventListener('keyup', function(event) {
+        if (event.key === 'Control') {
+            map.scrollWheelZoom.disable();
+        }
+    });
+
+    // ★★★ 中央のオーバーレイメッセージを制御 ★★★
+
+    // 1. 必要なHTML要素を取得
+    const mapOverlay = document.getElementById('map-overlay');
+    const zoomMessage = document.getElementById('zoom-message');
+
+    // 2. デバイスの種類を判別
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    // 3. デバイスに応じてメッセージを設定
+    if (isTouchDevice) {
+        zoomMessage.innerHTML = '地図を拡大・縮小するには<br>二本指で操作してください';
+    } else {
+        zoomMessage.innerHTML = '地図をズームするには、<kbd>Ctrl</kbd> キーを押しながら<br>スクロールしてください';
+    }
+
+   // 4. オーバーレイを消すための関数を定義
+    function hideOverlay() {
+        // すでに非表示処理が始まっている場合は何もしない
+        if (mapOverlay.style.opacity === '0') return;
+
+        mapOverlay.style.opacity = '0'; // フェードアウトさせる
+        // アニメーションが終わった後に要素を完全に非表示にして、パフォーマンスを向上させる
+        setTimeout(function() {
+            mapOverlay.style.display = 'none';
+        }, 500); // CSSのtransitionの時間と合わせる
+    }
+
+    // 5. ユーザーが初めてズーム、またはドラッグしたらオーバーレイを消す
+    map.once('zoomstart', hideOverlay);
+    map.once('dragstart', hideOverlay);
+
+        // 2. 地図タイルを読み込み
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO',
+            maxZoom: 21,
+            minZoom: 18 // ★ ズームアウトしすぎないように最小ズームレベルを設定
+        }).addTo(map);
 
 
     // 模擬店の表示を管理するための配列
