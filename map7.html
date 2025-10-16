@@ -36,12 +36,13 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5); /* 半透明の黒い背景 */
-            display: flex;
+            display: none; /* ← 変更：最初は非表示 */
+            opacity: 0;    /* ← 追加：透明な状態から開始 */
             justify-content: center;
             align-items: center;
             z-index: 1000; /* マップより手前に表示 */
             pointer-events: none; /* オーバーレイの下のマップを操作できるようにする */
-            transition: opacity 0.5s ease-in-out; /* フェードアウト用のアニメーション */
+            transition: opacity 0.3s ease-in-out; /* フェードアウト用のアニメーション */
         }
         #zoom-message {
             color: white;
@@ -124,44 +125,89 @@
         }
     });
 
-    // ★★★ 中央のオーバーレイメッセージを制御 ★★★
+    // ★★★ 中央のオーバーレイメッセージを制御（v4: 一度表示したら再読み込みまで維持） ★★★
 
     // 1. 必要なHTML要素を取得
     const mapOverlay = document.getElementById('map-overlay');
     const zoomMessage = document.getElementById('zoom-message');
+    const mapContainer = map.getContainer(); // Leafletのマップ要素を取得
 
-    // 2. デバイスの種類を判別
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    // 2. オーバーレイが一度でも表示されたかを記録するフラグ
+    let hasOverlayBeenShown = false;
 
-    // 3. デバイスに応じてメッセージを設定
-    if (isTouchDevice) {
-        zoomMessage.innerHTML = '地図を拡大・縮小するには<br>二本指で操作してください';
-    } else {
-        zoomMessage.innerHTML = '地図をズームするには、<kbd>Ctrl</kbd> キーを押しながら<br>スクロールしてください';
+    // 3. オーバーレイを表示する関数（一度だけ実行される）
+    function showOverlayOnce() {
+        // 既に一度表示されていたら、何もしない
+        if (hasOverlayBeenShown) {
+            return;
+        }
+        // 表示フラグを立て、二度とこの処理が実行されないようにする
+        hasOverlayBeenShown = true;
+
+        // デバイスの種類を判別
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        // デバイスに応じたメッセージを設定
+        if (isTouchDevice) {
+            zoomMessage.innerHTML = '地図を拡大・縮小するには<br>二本指で操作してください';
+        } else {
+            zoomMessage.innerHTML = '地図をズームするには、<kbd>Ctrl</kbd> キーを押しながら<br>スクロールしてください';
+        }
+
+        // オーバーレイを表示し、フェードインさせる
+        mapOverlay.style.display = 'flex';
+        setTimeout(() => { mapOverlay.style.opacity = '1'; }, 10);
     }
 
-   // 4. オーバーレイを消すための関数を定義
-    function hideOverlay() {
-        // すでに非表示処理が始まっている場合は何もしない
-        if (mapOverlay.style.opacity === '0') return;
+    // 4. 不適切な操作を検知してメッセージを表示するイベントリスナー
+    // 【PC用】Ctrlキーなしでホイール操作した場合
+    mapContainer.addEventListener('wheel', function(event) {
+        if (!event.ctrlKey) {
+            showOverlayOnce();
+        }
+    }, { passive: true });
 
-        mapOverlay.style.opacity = '0'; // フェードアウトさせる
-        // アニメーションが終わった後に要素を完全に非表示にして、パフォーマンスを向上させる
-        setTimeout(function() {
-            mapOverlay.style.display = 'none';
-        }, 500); // CSSのtransitionの時間と合わせる
-    }
+    // 【スマホ用】指一本でマップをスクロールしようとした場合
+    mapContainer.addEventListener('touchmove', function(event) {
+        if (event.touches.length === 1) {
+            showOverlayOnce();
+        }
+    }, { passive: true });
 
-    // 5. ユーザーが初めてズーム、またはドラッグしたらオーバーレイを消す
-    map.once('zoomstart', hideOverlay);
-    map.once('dragstart', hideOverlay);
+    // 5. 正しい操作が行われたら、表示されていれば非表示にする
+    map.on('zoomstart', hideOverlay);
+    map.on('dragstart', function(e) {
+        // タッチデバイスの場合、2本指以上でのドラッグ（ズーム操作）なら非表示にする
+        if (e.target.dragging._enabled && isTouchDevice && e.originalEvent.touches && e.originalEvent.touches.length > 1) {
+            hideOverlay();
+        } else if (!isTouchDevice) { // PCの場合は常に非表示
+            hideOverlay();
+        }
+    });
 
-        // 2. 地図タイルを読み込み
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors © CARTO',
-            maxZoom: 21,
-            minZoom: 18 // ★ ズームアウトしすぎないように最小ズームレベルを設定
-        }).addTo(map);
+    // 6. 不適切な操作を検知してメッセージを表示するイベントリスナー
+    // 【PC用】Ctrlキーなしでホイール操作した場合
+    mapContainer.addEventListener('wheel', function(event) {
+        if (!event.ctrlKey) {
+            event.preventDefault(); // ページのスクロールを止める
+            showOverlay();
+        }
+    }, { passive: true });
+
+    // 【スマホ用】指一本でマップをスクロールしようとした場合
+    mapContainer.addEventListener('touchmove', function(event) {
+        if (event.touches.length === 1) {
+            showOverlay();
+        }
+    }, { passive: true });
+    
+
+    // 2. 地図タイルを読み込み
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors © CARTO',
+        maxZoom: 21,
+        minZoom: 18 // ★ ズームアウトしすぎないように最小ズームレベルを設定
+    }).addTo(map);
 
 
     // 模擬店の表示を管理するための配列
