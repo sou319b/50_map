@@ -10,8 +10,13 @@
         html, body { height: 100%; margin: 0; }
         #map { width: 100%; height: 100%; }
         .building-label {
-            background-color: transparent;
-            border: none;
+            /*
+            background-color: rgba(255, 0, 0, 0.3); /* (例: 赤色の30%透明) */
+            border: 1px dashed red;             /* (例: 赤色の破線) */
+            /* ↑↑↑ 検証が終わったら元に戻してください ↑↑↑ */
+
+            background-color: transparent; /* (元の設定) */
+            border: none;                /* (元の設定) */
             box-shadow: none;
             font-weight: bold;
             font-size: 14px;
@@ -26,6 +31,14 @@
             font-size: 12px;
             color: black;
             text-shadow: 1px 1px 1px white;
+        }
+        .stall-label-angle4 {
+            /* transform: rotate(65deg)!important;  <-- この行を削除！ */
+        }
+        /* ↓↓↓ このクラスを新しく追加 ↓↓↓ */
+        .inner-rotated-text {
+            display: inline-block; /* 回転を適用するために必要 */
+            transform: rotate(30deg); /*角度*/
         }
         #map-overlay {
             position: absolute;
@@ -91,6 +104,34 @@ const mapConfig = {
     // ラベル（模擬店名など）が表示され始めるズームレベル
     labelVisibleZoom: 19
 };
+// --- ★ここから追加① ---
+
+// --- 大学の敷地データ ---
+// ここに大学の敷地（マスクしない範囲）の座標を追加します
+// ※地図をクリックするとコンソールに座標が出力されるので、それを利用して敷地の頂点を指定してください
+const campusBoundsCoords = [
+    // (↓これはダミーの座標です。必ず実際の座標に置き換えてください)
+    [35.487783, 139.340441], // 1左上
+    [35.488181, 139.344617], // 2右上
+    [35.485154, 139.345647], // 3右下
+    [35.485114, 139.342823], // 4真ん中下
+    [35.485302, 139.342747], // 5真ん中上
+    [35.485245, 139.341010],  // 6左下
+   
+    
+    // (頂点はいくつでも追加可能です)
+];
+
+// --- マスク（範囲外）の設定 ---
+const maskOptions = {
+    color: "#000000",      // マスクの枠線の色（通常はなし or fillColorに合わせる）
+    weight: 0,             // マスクの枠線の太さ
+    fillColor: "#000000",  // 範囲外の色
+    fillOpacity: 0.3,      // 範囲外の透明度 (0.0 〜 1.0)
+    interactive: false     // マスク部分はクリックできないようにする
+};
+
+// --- ★ここまで追加① ---
 
 // --- 建物データ ---
 // ここに建物の情報を追加・編集します
@@ -161,6 +202,12 @@ const buildingData = [
                 <p><b>５階: </b>利き酒サークル</p>`
     },
     {
+        coords: [35.487358, 139.343508],
+        label: '<b>E2号館</b>',
+        popup: `<h3>E2号館</h3>
+                <p><b>５階: </b>山口研究室</p>`
+    },
+    {
         coords: [35.486725, 139.342473],
         label: '<b>KAIT工房</b>',
         popup: `<h3>KAIT工房</h3>
@@ -188,18 +235,32 @@ const stallData = [
     { name: '焼売', center: [35.486402, 139.341932], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>バレーボールサークル 焼売</h3><p>肉の旨味たっぷり焼売！！</p>` },
     { name: 'ﾌﾗﾝｸﾌﾙﾄ', center: [35.486408, 139.342020], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>岡本剛研究室 フランクフルト</h3><p>アツアツ！ジューシーなフランクフルト</p>` },
     { name: '焼きそば', center: [35.486383, 139.341590], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><p>今年は焼きそばやります！ぜひ来てください！</p>` },
-    { name: 'ﾎｯﾄﾄﾞｯｸ', center: [35.486298, 139.341593], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>上田研究室 ホットドッグ</h3><p>歴史あるホットドックを販売！絶対食べに来てね！</p>` },
-    { name: 'ﾌﾗｲﾄﾞﾎﾟﾃﾄ', center: [35.486304, 139.341683], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>陳研究室 フライドポテト「陳」</h3><p>外はカリッ！中はホクホク食感！食べた人が笑顔になる</p>` },
-    { name: 'ﾜｯﾌﾙ', center: [35.486311, 139.341773], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>KAIT VR わふわふワッフル</h3><p>トッピング７種類からオリジナルワッフルを作ろう</p>` },
+    // { name: 'ホットドック', center: [35.486298, 139.341593], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>上田研究室 ホットドッグ</h3><p>歴史あるホットドックを販売！絶対食べに来てね！</p>` },
+    // { name: 'フライドポテト', center: [35.486304, 139.341683], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>陳研究室 フライドポテト「陳」</h3><p>外はカリッ！中はホクホク食感！食べた人が笑顔になる</p>` },
+    // { name: 'ワッフル', center: [35.486311, 139.341773], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>KAIT VR わふわふワッフル</h3><p>トッピング７種類からオリジナルワッフルを作ろう</p>` },
+    { name: '<span class="inner-rotated-text">ホットドック</span>', /* ★変更 */
+      center: [35.486298, 139.341593], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>上田研究室 ホットドッグ</h3><p>歴史あるホットドックを販売！絶対食べに来てね！</p>`,
+      labelOptions: { className: 'stall-label stall-label-angle4', offset: [0, 0] } // ★修正 (ずれ幅を小さく)
+    },
+    { name: '<span class="inner-rotated-text">フライドポテト</span>', /* ★変更 */
+      center: [35.486304, 139.341683], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>陳研究室 フライドポテト「陳」</h3><p>外はカリッ！中はホクホク食感！食べた人が笑顔になる</p>`,
+      labelOptions: { className: 'stall-label stall-label-angle4', offset: [0, 0] } // 変更なし
+    },
+    { name: '<span class="inner-rotated-text">ワッフル</span>', /* ★変更 */
+      center: [35.486311, 139.341773], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>KAIT VR わふわふワッフル</h3><p>トッピング７種類からオリジナルワッフルを作ろう</p>`,
+      labelOptions: { className: 'stall-label stall-label-angle4', offset: [0, 0] } // ★修正 (ずれ幅を小さく)
+    },
+
     { name: '餃子', center: [35.486524, 139.341557], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>塩川研究室 餃子BOSS</h3><p>肉汁たっぷり熱々の餃子をぜひ食べに来てください！</p>` },
     { name: 'ﾊｯｼｭﾄﾞﾎﾟﾃﾄ', center: [35.486614, 139.341548], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>岡本学研究室 ハッシュドポテト</h3><p>コスプレしてハッシュドポテト販売します！</p>` },
     { name: 'から揚げ', center: [35.487011, 139.341474], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>スキー部 俺のから揚げ</h3><p>スキー部みんなで作る。揚げたてのから揚げです！</p>` },
-    { name: 'たこ焼き', center: [35.487102, 139.341464], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>KAIT NLSC たこ焼きサークル揚げたこ焼き</h3><p>揚げたこ焼きをつくります！</p>` },
+    { name: 'たこ焼き', center: [35.487100, 139.341467], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>KAIT NLSC たこ焼きサークル揚げたこ焼き</h3><p>揚げたこ焼きをつくります！</p>` },
     { name: '射的', center: [35.486940, 139.341331], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>鹿島建設株式会社 射的</h3><p>豪華景品多数でお待ちしております。</p>` },
-    { name: 'ｺｰﾋｰ', center: [35.487026, 139.341323], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>自転車部 cycle cafe</h3><p>丹精を込めて高級コーヒーであるゲイシャを入れます！</p>` },
-    { name: 'わたあめ', center: [35.487117, 139.341313], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>信号処理応用研究室 わたあめ</h3><p>食べ歩きに甘いわたがしはいかが？２サイズあるよ！</p>` },
-    { name: 'ビンゴカード配布場所', center: [35.486473, 139.341781], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>学友会 ビンゴ大会</h3><p>豪華景品が当たるかも！？</p>` },
-    { name: '縁日', center: [35.486739, 139.341924], width: 8, height: 4, angle: 70, color: "#ff7800", popupContent: `<h3>学友会 縁日</h3><p>射的、輪投げでお菓子ゲット！</p>` },
+    { name: 'コーヒー', center: [35.487026, 139.341323], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>自転車部 cycle cafe</h3><p>丹精を込めて高級コーヒーであるゲイシャを入れます！</p>` },
+    { name: 'わたあめ', center: [35.487115, 139.341316], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>信号処理応用研究室 わたあめ</h3><p>食べ歩きに甘いわたがしはいかが？２サイズあるよ！</p>` },
+    //{ name: 'ビンゴカード配布場所', center: [35.486473, 139.341781], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>学友会 ビンゴ大会</h3><p>豪華景品が当たるかも！？</p>` },
+    { name: 'ビンゴカード配布場所', center: [35.486473, 139.341781], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>学友会 ビンゴ大会</h3><p>豪華景品が当たるかも！？<br><a href="https://kait-circle.jp/jikkou/bingo.html" target="_blank" rel="noopener noreferrer">詳細はこちら</a></p>` },
+    { name: '縁日', center: [35.486739, 139.341924], width: 8, height: 4, angle: 70, color: "#ff7800", popupContent: `<h3>学友会 縁日</h3><p>射的、輪投げでお菓子ゲット！<br><a href="https://kait-circle.jp/jikkou/ennichi.html" target="_blank" rel="noopener noreferrer">詳細はこちら</a></p>` },
 ];
 
 //==================================================================================
@@ -304,11 +365,26 @@ if (isTouchDevice) {
 
 //--- 3. 地図へのデータ描画 ---
 
+// 範囲外マスクの描画
+if (campusBoundsCoords && campusBoundsCoords.length > 0) {
+    // 1. 世界全体を覆う巨大な四角形（マスクのベース）
+    const worldBounds = [
+        [90, -180],
+        [90, 180],
+        [-90, 180],
+        [-90, -180]
+    ];
+    
+    // 2. 巨大な四角形(worldBounds)に、大学の敷地(campusBoundsCoords)の穴を開ける
+    // これにより、敷地の「外側」だけが塗りつぶされます
+    L.polygon([worldBounds, campusBoundsCoords], maskOptions).addTo(map);
+}
+
 const stallPolygons = []; // 模擬店ポリゴンを管理する配列
 
 // 建物データを地図に追加
 buildingData.forEach(data => {
-    const icon = L.divIcon({ className: 'building-label', html: data.label, iconSize: [100, 20] });
+    const icon = L.divIcon({ className: 'building-label', html: data.label, iconSize: [100, 40] });
     L.marker(data.coords, { icon: icon })
      .addTo(map)
      .bindPopup(data.popup);
@@ -318,10 +394,25 @@ buildingData.forEach(data => {
 stallData.forEach(data => {
     const center = L.latLng(data.center[0], data.center[1]);
     const corners = createRotatedRectangle(center, data.width, data.height, data.angle);
+
+    // ★★★ ここから修正 ★★★
+    // ツールチップのデフォルト設定
+    const defaultLabelOptions = { 
+        permanent: true, 
+        direction: 'center', 
+        className: 'stall-label' 
+    };
+    
+    // data.labelOptions があれば、デフォルト設定を上書き
+    const labelOptions = { ...defaultLabelOptions, ...(data.labelOptions || {}) };
+    
     const polygon = L.polygon(corners, { color: data.color, weight: 2 })
      .addTo(map)
-     .bindTooltip(data.name, { permanent: true, direction: 'center', className: 'stall-label' })
+     // ↓ labelOptions を使うように変更
+     .bindTooltip(data.name, labelOptions)
      .bindPopup(data.popupContent);
+    // ★★★ ここまで修正 ★★★
+
     stallPolygons.push(polygon);
 });
 
