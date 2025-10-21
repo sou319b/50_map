@@ -91,6 +91,30 @@ const mapConfig = {
     // ラベル（模擬店名など）が表示され始めるズームレベル
     labelVisibleZoom: 19
 };
+// --- ★ここから追加① ---
+
+// --- 大学の敷地データ ---
+// ここに大学の敷地（マスクしない範囲）の座標を追加します
+// ※地図をクリックするとコンソールに座標が出力されるので、それを利用して敷地の頂点を指定してください
+const campusBoundsCoords = [
+    // (↓これはダミーの座標です。必ず実際の座標に置き換えてください)
+    [35.487812, 139.340382], // ①左上
+    [35.488181, 139.344617], // ②右上
+    [35.485105, 139.345808], // ③右下
+    [35.485189, 139.340923]  // ④左下
+    // (頂点はいくつでも追加可能です)
+];
+
+// --- マスク（範囲外）の設定 ---
+const maskOptions = {
+    color: "#000000",      // マスクの枠線の色（通常はなし or fillColorに合わせる）
+    weight: 0,             // マスクの枠線の太さ
+    fillColor: "#000000",  // 範囲外の色
+    fillOpacity: 0.3,      // 範囲外の透明度 (0.0 〜 1.0)
+    interactive: false     // マスク部分はクリックできないようにする
+};
+
+// --- ★ここまで追加① ---
 
 // --- 建物データ ---
 // ここに建物の情報を追加・編集します
@@ -194,9 +218,9 @@ const stallData = [
     { name: '焼売', center: [35.486402, 139.341932], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>バレーボールサークル 焼売</h3><p>肉の旨味たっぷり焼売！！</p>` },
     { name: 'ﾌﾗﾝｸﾌﾙﾄ', center: [35.486408, 139.342020], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>岡本剛研究室 フランクフルト</h3><p>アツアツ！ジューシーなフランクフルト</p>` },
     { name: '焼きそば', center: [35.486383, 139.341590], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>kaitwintersportsサークル 焼きそば</h3><p>今年は焼きそばやります！ぜひ来てください！</p>` },
-    { name: 'ﾎｯﾄﾄﾞｯｸ', center: [35.486298, 139.341593], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>上田研究室 ホットドッグ</h3><p>歴史あるホットドックを販売！絶対食べに来てね！</p>` },
-    { name: 'ﾌﾗｲﾄﾞﾎﾟﾃﾄ', center: [35.486304, 139.341683], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>陳研究室 フライドポテト「陳」</h3><p>外はカリッ！中はホクホク食感！食べた人が笑顔になる</p>` },
-    { name: 'ﾜｯﾌﾙ', center: [35.486311, 139.341773], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>KAIT VR わふわふワッフル</h3><p>トッピング７種類からオリジナルワッフルを作ろう</p>` },
+    { name: 'ホットドック', center: [35.486298, 139.341593], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>上田研究室 ホットドッグ</h3><p>歴史あるホットドックを販売！絶対食べに来てね！</p>` },
+    { name: 'フライドポテト', center: [35.486304, 139.341683], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>陳研究室 フライドポテト「陳」</h3><p>外はカリッ！中はホクホク食感！食べた人が笑顔になる</p>` },
+    { name: 'ワッフル', center: [35.486311, 139.341773], width: 8, height: 4, angle: 4, color: "#ff7800", popupContent: `<h3>KAIT VR わふわふワッフル</h3><p>トッピング７種類からオリジナルワッフルを作ろう</p>` },
     { name: '餃子', center: [35.486524, 139.341557], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>塩川研究室 餃子BOSS</h3><p>肉汁たっぷり熱々の餃子をぜひ食べに来てください！</p>` },
     { name: 'ﾊｯｼｭﾄﾞﾎﾟﾃﾄ', center: [35.486614, 139.341548], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>岡本学研究室 ハッシュドポテト</h3><p>コスプレしてハッシュドポテト販売します！</p>` },
     { name: 'から揚げ', center: [35.487011, 139.341474], width: 8, height: 4, angle: 95, color: "#ff7800", popupContent: `<h3>スキー部 俺のから揚げ</h3><p>スキー部みんなで作る。揚げたてのから揚げです！</p>` },
@@ -310,6 +334,21 @@ if (isTouchDevice) {
 }
 
 //--- 3. 地図へのデータ描画 ---
+
+// 範囲外マスクの描画
+if (campusBoundsCoords && campusBoundsCoords.length > 0) {
+    // 1. 世界全体を覆う巨大な四角形（マスクのベース）
+    const worldBounds = [
+        [90, -180],
+        [90, 180],
+        [-90, 180],
+        [-90, -180]
+    ];
+    
+    // 2. 巨大な四角形(worldBounds)に、大学の敷地(campusBoundsCoords)の穴を開ける
+    // これにより、敷地の「外側」だけが塗りつぶされます
+    L.polygon([worldBounds, campusBoundsCoords], maskOptions).addTo(map);
+}
 
 const stallPolygons = []; // 模擬店ポリゴンを管理する配列
 
